@@ -166,7 +166,23 @@ export default function XmlImport() {
   };
 
   const handleImport = async () => {
-    if (!selectedFile || !profile?.agency_id) return;
+    if (!selectedFile) {
+      toast({
+        title: "Erro",
+        description: "Por favor selecione um ficheiro XML.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!profile?.agency_id) {
+      toast({
+        title: "Erro",
+        description: "Perfil não carregado. Tente refrescar a página.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsUploading(true);
     try {
