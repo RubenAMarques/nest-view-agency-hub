@@ -2,6 +2,8 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import XmlImport from '@/components/XmlImport';
 
 export default function AgencyDashboard() {
   const { user, profile, signOut } = useAuth();
@@ -39,22 +41,43 @@ export default function AgencyDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <h2 className="text-xl font-semibold mb-2">
-                  Sistema em Desenvolvimento
-                </h2>
-                <p className="text-muted-foreground">
-                  As funcionalidades da agência serão implementadas em breve.
+              <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
+                <p className="text-sm">
+                  <strong>Agência:</strong> {profile?.agency?.name}<br />
+                  <strong>Email:</strong> {user?.email}
                 </p>
-                <div className="mt-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
-                  <p className="text-sm">
-                    <strong>Agência:</strong> {profile?.agency?.name}<br />
-                    <strong>Email:</strong> {user?.email}
-                  </p>
-                </div>
               </div>
             </CardContent>
           </Card>
+
+          <Tabs defaultValue="import" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="import">Importar XML</TabsTrigger>
+              <TabsTrigger value="listings">Anúncios</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="import" className="space-y-4">
+              <XmlImport />
+            </TabsContent>
+            
+            <TabsContent value="listings" className="space-y-4">
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-elegant">
+                <CardHeader>
+                  <CardTitle>Anúncios da Agência</CardTitle>
+                  <CardDescription>
+                    Lista de propriedades da sua agência
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">
+                      Funcionalidade de gestão de anúncios será implementada em breve.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
     </div>
