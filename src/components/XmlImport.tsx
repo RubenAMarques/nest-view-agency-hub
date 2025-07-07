@@ -62,7 +62,8 @@ export default function XmlImport() {
 
   const parseOpenImmoXml = (xmlText: string) => {
     const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+    const sanitized = xmlText.replace(/&(?!amp;|lt;|gt;|apos;|quot;)/g, "&amp;");
+    const xmlDoc = parser.parseFromString(sanitized, "text/xml");
     
     // Check for parsing errors
     const parserError = xmlDoc.querySelector("parsererror");

@@ -73,6 +73,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }, 0);
         } else {
           setProfile(null);
+          // Redirect to auth page when logged out
+          if (event === 'SIGNED_OUT') {
+            window.location.href = '/auth';
+          }
         }
         
         setIsLoading(false);
