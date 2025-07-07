@@ -55,22 +55,6 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-elegant">
-            <CardHeader>
-              <CardTitle>Para Administradores</CardTitle>
-              <CardDescription>
-                Controle total sobre agências e utilizadores do sistema
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Gestão de agências</li>
-                <li>• Controle de utilizadores</li>
-                <li>• Configurações globais</li>
-                <li>• Relatórios administrativos</li>
-              </ul>
-            </CardContent>
-          </Card>
         </div>
 
         <div className="text-center space-x-4">
