@@ -73,13 +73,13 @@ export default function XmlImport() {
 
     const listings: any[] = [];
     // Use local-name() to handle namespaces
-    const immobilien = xmlDoc.querySelectorAll('[local-name()="immobilie"]');
+    const immobilien = xmlDoc.getElementsByTagName("immobilie");
 
     if (immobilien.length === 0) {
       throw new Error("Ficheiro não contém listagens OpenImmo válidas");
     }
 
-    immobilien.forEach((immobilie) => {
+    Array.from(immobilien).forEach((immobilie) => {
       const listing: any = {
         xml_data: {}
       };
