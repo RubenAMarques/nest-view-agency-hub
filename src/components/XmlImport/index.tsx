@@ -10,6 +10,7 @@ export default function XmlImport() {
     imports,
     selectedFile,
     isUploading,
+    uploadProgress,
     fetchImports,
     handleFileSelect,
     handleImport
@@ -29,6 +30,7 @@ export default function XmlImport() {
       <XmlUploadSection
         selectedFile={selectedFile}
         isUploading={isUploading}
+        uploadProgress={uploadProgress}
         onFileSelect={handleFileSelect}
         onImport={handleImport}
         onClearFile={handleClearFile}

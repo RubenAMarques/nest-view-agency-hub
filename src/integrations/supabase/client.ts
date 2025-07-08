@@ -13,5 +13,30 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
+    detectSessionInUrl: true,
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'supabase-js-web/2.50.3'
+    }
+  },
+  db: {
+    schema: 'public'
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10
+    }
   }
 });
+
+// Add connection health check
+export const checkConnection = async (): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase.from('agencies').select('count').limit(1);
+    return !error;
+  } catch (error) {
+    console.error('Connection check failed:', error);
+    return false;
+  }
+};

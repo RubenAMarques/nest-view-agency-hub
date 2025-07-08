@@ -2,11 +2,13 @@ import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Upload } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Upload, AlertCircle } from 'lucide-react';
 
 interface XmlUploadSectionProps {
   selectedFile: File | null;
   isUploading: boolean;
+  uploadProgress?: number;
   onFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onImport: () => Promise<boolean>;
   onClearFile: () => void;
@@ -15,6 +17,7 @@ interface XmlUploadSectionProps {
 export function XmlUploadSection({ 
   selectedFile, 
   isUploading, 
+  uploadProgress = 0,
   onFileSelect, 
   onImport,
   onClearFile 
@@ -63,6 +66,28 @@ export function XmlUploadSection({
             <p className="text-xs text-muted-foreground">
               Tamanho: {(selectedFile.size / 1024).toFixed(1)} KB
             </p>
+          </div>
+        )}
+
+        {isUploading && uploadProgress > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Upload className="h-4 w-4 animate-pulse" />
+              A importar ficheiro... {uploadProgress}%
+            </div>
+            <Progress value={uploadProgress} className="w-full" />
+          </div>
+        )}
+
+        {!isUploading && (
+          <div className="p-3 bg-muted/50 rounded-lg border border-border/50">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+              <div className="text-xs text-muted-foreground">
+                <p className="font-medium mb-1">Configuração CORS necessária:</p>
+                <p>Se encontrar erros de conectividade, adicione o domínio à whitelist CORS no Supabase Dashboard → Settings → API → CORS</p>
+              </div>
+            </div>
           </div>
         )}
         

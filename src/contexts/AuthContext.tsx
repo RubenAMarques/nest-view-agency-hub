@@ -60,9 +60,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Set up auth state listener
+    // Redirect to login on token expiry
+    const handleAuthError = () => {
+      console.log('Auth error detected, redirecting to login');
+      window.location.href = '/auth';
+    };
+
+    // Set up auth state listener with error handling
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email);
+        
+        // Handle specific auth events
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('Token refreshed successfully');
+        } else if (event === 'SIGNED_OUT') {
+          console.log('User signed out');
+          setProfile(null);
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -73,6 +89,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }, 0);
         } else {
           setProfile(null);
+          // Only redirect if we had a user before (token expired)
+          if (event === 'TOKEN_REFRESHED' && !session) {
+            handleAuthError();
+          }
         }
         
         setIsLoading(false);
