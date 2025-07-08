@@ -2,9 +2,7 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import XmlImport from '@/components/XmlImport';
-import ListingsTable from '@/components/ListingsTable';
 
 export default function AgencyDashboard() {
   const { user, profile, signOut } = useAuth();
@@ -51,20 +49,7 @@ export default function AgencyDashboard() {
             </CardContent>
           </Card>
 
-          <Tabs defaultValue="import" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="import">Importar XML</TabsTrigger>
-              <TabsTrigger value="listings">Anúncios</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="import" className="space-y-4">
-              <XmlImport />
-            </TabsContent>
-            
-            <TabsContent value="listings" className="space-y-4">
-              <ListingsTable />
-            </TabsContent>
-          </Tabs>
+          <XmlImport />
         </div>
       </main>
     </div>

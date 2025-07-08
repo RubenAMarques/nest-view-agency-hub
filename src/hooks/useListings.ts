@@ -13,6 +13,9 @@ export interface Listing {
   images: string[] | null;
   created_at: string;
   import_id: string | null;
+  has_bad_photos: boolean;
+  has_bad_description: boolean;
+  is_duplicate: boolean;
 }
 
 export function useListings() {
