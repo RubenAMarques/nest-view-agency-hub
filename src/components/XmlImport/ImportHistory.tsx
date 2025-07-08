@@ -1,4 +1,6 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ImportRecord } from '@/types/import';
 
@@ -7,6 +9,8 @@ interface ImportHistoryProps {
 }
 
 export function ImportHistory({ imports }: ImportHistoryProps) {
+  const navigate = useNavigate();
+  
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT', {
       day: '2-digit',
@@ -35,7 +39,8 @@ export function ImportHistory({ imports }: ImportHistoryProps) {
             {imports.map((importRecord) => (
               <div
                 key={importRecord.id}
-                className="flex items-center justify-between p-3 bg-background/50 rounded-lg border border-border/30"
+                onClick={() => navigate(`/importacoes/${importRecord.id}`)}
+                className="flex items-center justify-between p-3 bg-background/50 rounded-lg border border-border/30 cursor-pointer hover:bg-muted/20 transition-colors"
               >
                 <div>
                   <p className="font-medium">{importRecord.file_name}</p>
@@ -43,21 +48,24 @@ export function ImportHistory({ imports }: ImportHistoryProps) {
                     {formatDate(importRecord.import_date)}
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium">
-                    {importRecord.num_listings} anúncios
-                  </p>
-                  <p className={`text-xs ${
-                    importRecord.status === 'completed' 
-                      ? 'text-green-600' 
-                      : importRecord.status === 'failed'
-                      ? 'text-red-600'
-                      : 'text-yellow-600'
-                  }`}>
-                    {importRecord.status === 'completed' && 'Concluído'}
-                    {importRecord.status === 'failed' && 'Falhou'}
-                    {importRecord.status === 'processing' && 'A processar'}
-                  </p>
+                <div className="flex items-center gap-2">
+                  <div className="text-right">
+                    <p className="text-sm font-medium">
+                      {importRecord.num_listings} anúncios
+                    </p>
+                    <p className={`text-xs ${
+                      importRecord.status === 'completed' 
+                        ? 'text-green-600' 
+                        : importRecord.status === 'failed'
+                        ? 'text-red-600'
+                        : 'text-yellow-600'
+                    }`}>
+                      {importRecord.status === 'completed' && 'Concluído'}
+                      {importRecord.status === 'failed' && 'Falhou'}
+                      {importRecord.status === 'processing' && 'A processar'}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </div>
               </div>
             ))}
