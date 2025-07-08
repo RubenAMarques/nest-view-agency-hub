@@ -88,6 +88,7 @@ export type Database = {
           description: string | null
           id: string
           images: string[] | null
+          import_id: string | null
           latitude: number | null
           living_area: number | null
           longitude: number | null
@@ -109,6 +110,7 @@ export type Database = {
           description?: string | null
           id?: string
           images?: string[] | null
+          import_id?: string | null
           latitude?: number | null
           living_area?: number | null
           longitude?: number | null
@@ -130,6 +132,7 @@ export type Database = {
           description?: string | null
           id?: string
           images?: string[] | null
+          import_id?: string | null
           latitude?: number | null
           living_area?: number | null
           longitude?: number | null
@@ -149,6 +152,13 @@ export type Database = {
             columns: ["agency_id"]
             isOneToOne: false
             referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listings_import_id_fkey"
+            columns: ["import_id"]
+            isOneToOne: false
+            referencedRelation: "imports"
             referencedColumns: ["id"]
           },
         ]

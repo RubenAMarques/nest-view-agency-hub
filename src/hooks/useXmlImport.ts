@@ -86,7 +86,8 @@ export function useXmlImport() {
       // Insert listings
       const listingsWithAgency = listings.map(listing => ({
         ...listing,
-        agency_id: profile.agency_id
+        agency_id: profile.agency_id,
+        import_id: importRecord.id
       }));
 
       const { error: listingsError } = await supabase

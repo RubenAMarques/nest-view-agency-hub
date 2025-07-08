@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import XmlImport from '@/components/XmlImport';
+import ListingsTable from '@/components/ListingsTable';
 
 export default function AgencyDashboard() {
   const { user, profile, signOut } = useAuth();
@@ -61,21 +62,7 @@ export default function AgencyDashboard() {
             </TabsContent>
             
             <TabsContent value="listings" className="space-y-4">
-              <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-elegant">
-                <CardHeader>
-                  <CardTitle>Anúncios da Agência</CardTitle>
-                  <CardDescription>
-                    Lista de propriedades da sua agência
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">
-                      Funcionalidade de gestão de anúncios será implementada em breve.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              <ListingsTable />
             </TabsContent>
           </Tabs>
         </div>
