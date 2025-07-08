@@ -73,12 +73,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }, 0);
         } else {
           setProfile(null);
-          // Redirect to auth page when logged out
-          if (event === 'SIGNED_OUT') {
-            setTimeout(() => {
-              window.location.href = '/auth';
-            }, 100);
-          }
         }
         
         setIsLoading(false);
@@ -130,6 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    window.location.href = '/auth';
   };
 
   const value = {
