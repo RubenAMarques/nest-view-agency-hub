@@ -31,7 +31,7 @@ export function useListings() {
       setIsLoading(true);
       const { data, error } = await supabase
         .from('listings')
-        .select('id,title,city,price,living_area,rooms,images,created_at,import_id')
+        .select('id,title,city,price,living_area,rooms,images,created_at,import_id,has_bad_photos,has_bad_description,is_duplicate')
         .eq('agency_id', profile.agency_id)
         .order('created_at', { ascending: false });
 
@@ -45,7 +45,14 @@ export function useListings() {
         return;
       }
 
-      setListings(data || []);
+      const listingsWithDefaults = (data || []).map(listing => ({
+        ...listing,
+        has_bad_photos: listing.has_bad_photos || false,
+        has_bad_description: listing.has_bad_description || false,
+        is_duplicate: listing.is_duplicate || false,
+      }));
+      
+      setListings(listingsWithDefaults);
     } catch (error) {
       console.error('Error fetching listings:', error);
       toast({

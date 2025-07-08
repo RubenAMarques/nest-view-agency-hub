@@ -86,9 +86,12 @@ export type Database = {
           country: string | null
           created_at: string
           description: string | null
+          has_bad_description: boolean | null
+          has_bad_photos: boolean | null
           id: string
           images: string[] | null
           import_id: string | null
+          is_duplicate: boolean | null
           latitude: number | null
           living_area: number | null
           longitude: number | null
@@ -108,9 +111,12 @@ export type Database = {
           country?: string | null
           created_at?: string
           description?: string | null
+          has_bad_description?: boolean | null
+          has_bad_photos?: boolean | null
           id?: string
           images?: string[] | null
           import_id?: string | null
+          is_duplicate?: boolean | null
           latitude?: number | null
           living_area?: number | null
           longitude?: number | null
@@ -130,9 +136,12 @@ export type Database = {
           country?: string | null
           created_at?: string
           description?: string | null
+          has_bad_description?: boolean | null
+          has_bad_photos?: boolean | null
           id?: string
           images?: string[] | null
           import_id?: string | null
+          is_duplicate?: boolean | null
           latitude?: number | null
           living_area?: number | null
           longitude?: number | null
