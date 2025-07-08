@@ -18,22 +18,34 @@ export interface Listing {
   is_duplicate: boolean;
 }
 
+const PAGE_SIZE = 50;
+
+const getRange = (page: number, pageSize: number) => {
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
+  return { from, to };
+};
+
 export function useListings() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
   const { profile } = useAuth();
   const { toast } = useToast();
 
-  const fetchListings = async () => {
+  const fetchListings = async (page: number = 0) => {
     if (!profile?.agency_id) return;
 
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
+      const { from, to } = getRange(page, PAGE_SIZE);
+      
+      const { data, error, count } = await supabase
         .from('listings')
-        .select('id,title,city,price,living_area,rooms,images,created_at,import_id,has_bad_photos,has_bad_description,is_duplicate')
+        .select('id,title,city,price,living_area,rooms,images,created_at,import_id,has_bad_photos,has_bad_description,is_duplicate', { count: 'exact' })
         .eq('agency_id', profile.agency_id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
       if (error) {
         console.error('Error fetching listings:', error);
@@ -53,6 +65,7 @@ export function useListings() {
       }));
       
       setListings(listingsWithDefaults);
+      setTotalCount(count || 0);
     } catch (error) {
       console.error('Error fetching listings:', error);
       toast({
@@ -72,6 +85,7 @@ export function useListings() {
   return {
     listings,
     isLoading,
+    totalCount,
     fetchListings
   };
 }

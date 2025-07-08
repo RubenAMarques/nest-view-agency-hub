@@ -1,11 +1,18 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import XmlImport from '@/components/XmlImport';
 
 export default function AgencyDashboard() {
   const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth', { replace: true });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -23,7 +30,7 @@ export default function AgencyDashboard() {
             <span className="text-sm text-muted-foreground">
               {user?.email} • {profile?.agency?.name}
             </span>
-            <Button onClick={signOut} variant="outline" size="sm">
+            <Button onClick={handleSignOut} variant="outline" size="sm">
               Sair
             </Button>
           </div>
