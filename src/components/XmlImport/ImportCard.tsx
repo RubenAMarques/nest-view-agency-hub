@@ -44,12 +44,27 @@ export function ImportCard({ importRecord, onImportDeleted }: ImportCardProps) {
     
     setIsDeleting(true);
     try {
-      const { error } = await supabase
+      // First delete all associated listings
+      const { error: listingsError } = await supabase
+        .from('listings')
+        .delete()
+        .eq('import_id', importRecord.id);
+
+      if (listingsError) {
+        console.error('Error deleting listings:', listingsError);
+        throw new Error('Erro ao eliminar anúncios associados');
+      }
+
+      // Then delete the import record
+      const { error: importError } = await supabase
         .from('imports')
         .delete()
         .eq('id', importRecord.id);
 
-      if (error) throw error;
+      if (importError) {
+        console.error('Error deleting import:', importError);
+        throw importError;
+      }
 
       toast({
         title: "Importação eliminada",
@@ -57,11 +72,11 @@ export function ImportCard({ importRecord, onImportDeleted }: ImportCardProps) {
       });
 
       onImportDeleted?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting import:', error);
       toast({
         title: "Erro ao eliminar",
-        description: "Ocorreu um erro ao eliminar a importação.",
+        description: error.message || "Ocorreu um erro ao eliminar a importação.",
         variant: "destructive",
       });
     } finally {
