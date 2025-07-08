@@ -75,7 +75,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setProfile(null);
           // Redirect to auth page when logged out
           if (event === 'SIGNED_OUT') {
-            window.location.href = '/auth';
+            setTimeout(() => {
+              window.location.href = '/auth';
+            }, 100);
           }
         }
         

@@ -1,5 +1,14 @@
 import { ParsedListing } from '@/types/import';
 
+const getElementByTagName = (parent: Element, tagName: string): Element | null => {
+  const elements = parent.getElementsByTagName(tagName);
+  return elements.length > 0 ? elements[0] : null;
+};
+
+const getElementTextContent = (element: Element | null): string | undefined => {
+  return element?.textContent?.trim() || undefined;
+};
+
 export const parseOpenImmoXml = (xmlText: string): ParsedListing[] => {
   const parser = new DOMParser();
   const sanitized = xmlText.replace(/&(?!amp;|lt;|gt;|apos;|quot;)/g, "&amp;");
@@ -25,72 +34,90 @@ export const parseOpenImmoXml = (xmlText: string): ParsedListing[] => {
       }
     };
 
-    // Extract basic property info using local-name()
-    const objekttitel = immobilie.querySelector('[local-name()="freitexte"] [local-name()="objekttitel"]');
-    if (objekttitel) listing.title = objekttitel.textContent?.trim();
+    // Extract basic property info
+    const freitexte = getElementByTagName(immobilie, "freitexte");
+    if (freitexte) {
+      const objekttitel = getElementByTagName(freitexte, "objekttitel");
+      listing.title = getElementTextContent(objekttitel);
 
-    const dreizeiler = immobilie.querySelector('[local-name()="freitexte"] [local-name()="dreizeiler"]');
-    if (dreizeiler) listing.description = dreizeiler.textContent?.trim();
+      const dreizeiler = getElementByTagName(freitexte, "dreizeiler");
+      if (!listing.description) {
+        listing.description = getElementTextContent(dreizeiler);
+      }
+
+      const objektbeschreibung = getElementByTagName(freitexte, "objektbeschreibung");
+      if (!listing.description) {
+        listing.description = getElementTextContent(objektbeschreibung);
+      }
+    }
 
     // Extract address
-    const geo = immobilie.querySelector('[local-name()="geo"]');
+    const geo = getElementByTagName(immobilie, "geo");
     if (geo) {
-      const ort = geo.querySelector('[local-name()="ort"]');
-      if (ort) listing.city = ort.textContent?.trim();
+      const ort = getElementByTagName(geo, "ort");
+      listing.city = getElementTextContent(ort);
 
-      const plz = geo.querySelector('[local-name()="plz"]');
-      if (plz) listing.zipcode = plz.textContent?.trim();
+      const plz = getElementByTagName(geo, "plz");
+      listing.zipcode = getElementTextContent(plz);
 
-      const strasse = geo.querySelector('[local-name()="strasse"]');
-      if (strasse) listing.street = strasse.textContent?.trim();
+      const strasse = getElementByTagName(geo, "strasse");
+      listing.street = getElementTextContent(strasse);
 
-      const land = geo.querySelector('[local-name()="land"]');
-      if (land) listing.country = land.textContent?.trim();
+      const land = getElementByTagName(geo, "land");
+      listing.country = getElementTextContent(land);
 
       // Coordinates
-      const breitengrad = geo.querySelector('[local-name()="breitengrad"]');
-      const laengengrad = geo.querySelector('[local-name()="laengengrad"]');
-      if (breitengrad) listing.latitude = parseFloat(breitengrad.textContent || '0');
-      if (laengengrad) listing.longitude = parseFloat(laengengrad.textContent || '0');
+      const breitengrad = getElementByTagName(geo, "breitengrad");
+      const laengengrad = getElementByTagName(geo, "laengengrad");
+      if (breitengrad?.textContent) {
+        listing.latitude = parseFloat(breitengrad.textContent);
+      }
+      if (laengengrad?.textContent) {
+        listing.longitude = parseFloat(laengengrad.textContent);
+      }
     }
 
     // Extract prices
-    const preise = immobilie.querySelector('[local-name()="preise"]');
+    const preise = getElementByTagName(immobilie, "preise");
     if (preise) {
-      const kaufpreis = preise.querySelector('[local-name()="kaufpreis"]');
-      const nettokaltmiete = preise.querySelector('[local-name()="nettokaltmiete"]');
+      const kaufpreis = getElementByTagName(preise, "kaufpreis");
+      const nettokaltmiete = getElementByTagName(preise, "nettokaltmiete");
       
-      if (kaufpreis) {
-        listing.price = parseFloat(kaufpreis.textContent || '0');
+      if (kaufpreis?.textContent) {
+        listing.price = parseFloat(kaufpreis.textContent);
         listing.offer_type = 'sale';
-      } else if (nettokaltmiete) {
-        listing.price = parseFloat(nettokaltmiete.textContent || '0');
+      } else if (nettokaltmiete?.textContent) {
+        listing.price = parseFloat(nettokaltmiete.textContent);
         listing.offer_type = 'rent';
       }
     }
 
     // Extract areas and rooms
-    const flaechen = immobilie.querySelector('[local-name()="flaechen"]');
+    const flaechen = getElementByTagName(immobilie, "flaechen");
     if (flaechen) {
-      const wohnflaeche = flaechen.querySelector('[local-name()="wohnflaeche"]');
-      if (wohnflaeche) listing.living_area = parseFloat(wohnflaeche.textContent || '0');
+      const wohnflaeche = getElementByTagName(flaechen, "wohnflaeche");
+      if (wohnflaeche?.textContent) {
+        listing.living_area = parseFloat(wohnflaeche.textContent);
+      }
     }
 
-    const ausstattung = immobilie.querySelector('[local-name()="ausstattung"]');
+    const ausstattung = getElementByTagName(immobilie, "ausstattung");
     if (ausstattung) {
-      const anzahlZimmer = ausstattung.querySelector('[local-name()="anzahl_zimmer"]');
-      if (anzahlZimmer) listing.rooms = parseInt(anzahlZimmer.textContent || '0');
+      const anzahlZimmer = getElementByTagName(ausstattung, "anzahl_zimmer");
+      if (anzahlZimmer?.textContent) {
+        listing.rooms = parseInt(anzahlZimmer.textContent);
+      }
     }
 
     // Extract property type
-    const objektkategorie = immobilie.querySelector('[local-name()="objektkategorie"]');
+    const objektkategorie = getElementByTagName(immobilie, "objektkategorie");
     if (objektkategorie) {
-      const objektart = objektkategorie.querySelector('[local-name()="objektart"]');
+      const objektart = getElementByTagName(objektkategorie, "objektart");
       
       if (objektart) {
-        const wohnung = objektart.querySelector('[local-name()="wohnung"]');
-        const haus = objektart.querySelector('[local-name()="haus"]');
-        const grundstueck = objektart.querySelector('[local-name()="grundstueck"]');
+        const wohnung = getElementByTagName(objektart, "wohnung");
+        const haus = getElementByTagName(objektart, "haus");
+        const grundstueck = getElementByTagName(objektart, "grundstueck");
         
         if (wohnung) listing.property_type = 'apartment';
         else if (haus) listing.property_type = 'house';
