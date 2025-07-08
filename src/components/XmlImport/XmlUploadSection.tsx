@@ -40,7 +40,7 @@ export function XmlUploadSection({
           Importar Listagens via XML
         </CardTitle>
         <CardDescription>
-          Carregue um ficheiro XML no formato OpenImmo para importar anúncios
+          Importe e gerencie as suas listagens em segundos, sem complicações
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -76,18 +76,6 @@ export function XmlUploadSection({
               A importar ficheiro... {uploadProgress}%
             </div>
             <Progress value={uploadProgress} className="w-full" />
-          </div>
-        )}
-
-        {!isUploading && (
-          <div className="p-3 bg-muted/50 rounded-lg border border-border/50">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
-              <div className="text-xs text-muted-foreground">
-                <p className="font-medium mb-1">Configuração CORS necessária:</p>
-                <p>Se encontrar erros de conectividade, adicione o domínio à whitelist CORS no Supabase Dashboard → Settings → API → CORS</p>
-              </div>
-            </div>
           </div>
         )}
         

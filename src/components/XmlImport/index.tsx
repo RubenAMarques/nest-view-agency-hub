@@ -36,7 +36,7 @@ export default function XmlImport() {
         onClearFile={handleClearFile}
       />
       
-      <ImportHistory imports={imports} />
+      <ImportHistory imports={imports} onImportDeleted={fetchImports} />
     </div>
   );
 }

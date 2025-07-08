@@ -5,9 +5,10 @@ import { ImportCard } from './ImportCard';
 
 interface ImportHistoryProps {
   imports: ImportRecord[];
+  onImportDeleted?: () => void;
 }
 
-export function ImportHistory({ imports }: ImportHistoryProps) {
+export function ImportHistory({ imports, onImportDeleted }: ImportHistoryProps) {
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-elegant">
       <CardHeader>
@@ -24,7 +25,11 @@ export function ImportHistory({ imports }: ImportHistoryProps) {
         ) : (
           <div className="space-y-2">
             {imports.map((importRecord) => (
-              <ImportCard key={importRecord.id} importRecord={importRecord} />
+              <ImportCard 
+                key={importRecord.id} 
+                importRecord={importRecord} 
+                onImportDeleted={onImportDeleted}
+              />
             ))}
           </div>
         )}

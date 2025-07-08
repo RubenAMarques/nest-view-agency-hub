@@ -1,16 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Card } from '@/components/ui/card';
 import { ImportRecord } from '@/types/import';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface ImportCardProps {
   importRecord: ImportRecord;
+  onImportDeleted?: () => void;
 }
 
-export function ImportCard({ importRecord }: ImportCardProps) {
+export function ImportCard({ importRecord, onImportDeleted }: ImportCardProps) {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleClick = () => {
     navigate(`/importacoes/${importRecord.id}`);
@@ -20,6 +36,36 @@ export function ImportCard({ importRecord }: ImportCardProps) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleClick();
+    }
+  };
+
+  const handleDelete = async () => {
+    if (isDeleting) return;
+    
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('imports')
+        .delete()
+        .eq('id', importRecord.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Importação eliminada",
+        description: "A importação foi eliminada com sucesso.",
+      });
+
+      onImportDeleted?.();
+    } catch (error) {
+      console.error('Error deleting import:', error);
+      toast({
+        title: "Erro ao eliminar",
+        description: "Ocorreu um erro ao eliminar a importação.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -49,21 +95,41 @@ export function ImportCard({ importRecord }: ImportCardProps) {
       {/* Informação à direita */}
       <div className="flex items-center gap-3">
         <div className="text-right">
-          <div className="text-sm font-semibold text-primary-foreground">
+          <div className="text-sm font-semibold text-foreground">
             {importRecord.num_listings} anúncio{importRecord.num_listings !== 1 ? 's' : ''}
           </div>
-          <p className={`text-xs ${
-            importRecord.status === 'completed' 
-              ? 'text-green-600' 
-              : importRecord.status === 'failed'
-              ? 'text-red-600'
-              : 'text-yellow-600'
-          }`}>
-            {importRecord.status === 'completed' && 'Concluído'}
-            {importRecord.status === 'failed' && 'Falhou'}
-            {importRecord.status === 'processing' && 'A processar'}
-          </p>
         </div>
+        
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button
+              className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+              disabled={isDeleting}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Eliminar importação</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem a certeza que pretende eliminar esta importação? Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'A eliminar...' : 'Eliminar'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        
         <ChevronRight className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" />
       </div>
     </Card>
