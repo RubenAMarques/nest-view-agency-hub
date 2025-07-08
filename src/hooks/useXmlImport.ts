@@ -65,12 +65,14 @@ export function useXmlImport() {
     }
 
     setIsUploading(true);
+    let importRecord: any = null;
+    
     try {
       const fileText = await selectedFile.text();
       const listings = parseOpenImmoXml(fileText);
 
       // Create import record
-      const { data: importRecord, error: importError } = await supabase
+      const { data: importData, error: importError } = await supabase
         .from('imports')
         .insert({
           agency_id: profile.agency_id,
@@ -82,8 +84,9 @@ export function useXmlImport() {
         .single();
 
       if (importError) throw importError;
+      importRecord = importData;
 
-      // Insert listings
+      // Insert listings with import_id
       const listingsWithAgency = listings.map(listing => ({
         ...listing,
         agency_id: profile.agency_id,
@@ -94,13 +97,28 @@ export function useXmlImport() {
         .from('listings')
         .insert(listingsWithAgency);
 
-      if (listingsError) throw listingsError;
+      if (listingsError) {
+        // If listings insertion fails, update import status to failed
+        await supabase
+          .from('imports')
+          .update({ 
+            status: 'failed',
+            error_message: listingsError.message
+          })
+          .eq('id', importRecord.id);
+        throw listingsError;
+      }
 
-      // Update import status
-      await supabase
+      // Update import status to completed
+      const { error: updateError } = await supabase
         .from('imports')
         .update({ status: 'completed' })
         .eq('id', importRecord.id);
+
+      if (updateError) {
+        console.error('Failed to update import status:', updateError);
+        // Don't throw here as the listings were successfully inserted
+      }
 
       toast({
         title: "Sucesso",
@@ -108,10 +126,23 @@ export function useXmlImport() {
       });
 
       setSelectedFile(null);
+      await fetchImports(); // Refresh the imports list
       return true;
 
     } catch (error: any) {
       console.error('Import error:', error);
+      
+      // Update import status to failed if we have an import record
+      if (importRecord?.id) {
+        await supabase
+          .from('imports')
+          .update({ 
+            status: 'failed',
+            error_message: error.message || 'Erro desconhecido'
+          })
+          .eq('id', importRecord.id);
+      }
+      
       toast({
         title: "Erro na importação",
         description: error.message || "Erro ao processar o ficheiro XML.",
