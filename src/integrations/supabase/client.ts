@@ -2,8 +2,8 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://jpbqehtcthvhhkpbcqxo.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwYnFlaHRjdGh2aGhrcGJjcXhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5MTMxNjUsImV4cCI6MjA2NzQ4OTE2NX0.U7YLV5j92gmLvIN7HHXYpmiHPX1ayqzTi-Q67e35zSQ";
+const SUPABASE_URL = "https://eytqmdssekkdlnoqzrzb.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5dHFtZHNzZWtrZGxub3F6cnpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwNzUzMjIsImV4cCI6MjA2NzY1MTMyMn0.IUsVVZZ-GiX33zk1go8JAQjThdm9M4pv4dnEOv2dkJ0";
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
@@ -13,30 +13,5 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true,
-  },
-  global: {
-    headers: {
-      'X-Client-Info': 'supabase-js-web/2.50.3'
-    }
-  },
-  db: {
-    schema: 'public'
-  },
-  realtime: {
-    params: {
-      eventsPerSecond: 10
-    }
   }
 });
-
-// Add connection health check
-export const checkConnection = async (): Promise<boolean> => {
-  try {
-    const { data, error } = await supabase.from('agencies').select('count').limit(1);
-    return !error;
-  } catch (error) {
-    console.error('Connection check failed:', error);
-    return false;
-  }
-};
