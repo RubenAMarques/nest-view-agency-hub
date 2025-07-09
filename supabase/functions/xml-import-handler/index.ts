@@ -6,14 +6,15 @@ Deno.serve(async (req) => {
     'https://fae488a3-d626-4849-b66c-d31dda8be445.lovableproject.com',
     'https://id-preview--fae488a3-d626-4849-b66c-d31dda8be445.lovable.app',
     'https://lovable.dev',
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'http://localhost:5173'
   ];
   
   const origin = req.headers.get('Origin') || '';
   const isAllowedOrigin = allowedOrigins.includes(origin);
   
   const corsHeaders = {
-    'Access-Control-Allow-Origin': isAllowedOrigin ? origin : allowedOrigins[0],
+    'Access-Control-Allow-Origin': isAllowedOrigin ? origin : '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-auth',
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
     'Access-Control-Allow-Credentials': 'true',

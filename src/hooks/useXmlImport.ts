@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { supabase, checkConnection } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { parseOpenImmoXml } from '@/utils/xmlParser';
 import { ImportRecord } from '@/types/import';
 
@@ -156,7 +156,7 @@ export function useXmlImport() {
         console.log('Tentando usar Edge Function para importação...');
         
         const response = await fetch(
-          'https://jpbqehtcthvhhkpbcqxo.functions.supabase.co/xml-import-handler',
+          'https://eytqmdssekkdlnoqzrzb.functions.supabase.co/xml-import-handler',
           {
             method: 'POST',
             headers: {
