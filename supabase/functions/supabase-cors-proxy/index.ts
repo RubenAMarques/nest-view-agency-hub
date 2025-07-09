@@ -1,14 +1,24 @@
-import { createClient } from 'jsr:@supabase/supabase-js@2';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': '*',
-  'Access-Control-Allow-Methods': '*',
-  'Access-Control-Max-Age': '86400',
-};
-
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
+  // Configurar cabeçalhos CORS para permitir solicitações de domínios específicos
+  const allowedOrigins = [
+    'https://fae488a3-d626-4849-b66c-d31dda8be445.lovableproject.com',
+    'https://id-preview--fae488a3-d626-4849-b66c-d31dda8be445.lovable.app',
+    'https://lovable.dev',
+    'http://localhost:3000'
+  ];
+  
+  const origin = req.headers.get('Origin') || '';
+  const isAllowedOrigin = allowedOrigins.includes(origin);
+  
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': isAllowedOrigin ? origin : allowedOrigins[0],
+    'Access-Control-Allow-Headers': '*',
+    'Access-Control-Allow-Methods': '*',
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Max-Age': '86400',
+  };
+
+  // Lidar com solicitações OPTIONS (preflight)
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
@@ -22,14 +32,14 @@ Deno.serve(async (req) => {
     const targetPath = url.pathname.replace('/supabase-cors-proxy', '');
     const targetUrl = `https://jpbqehtcthvhhkpbcqxo.supabase.co${targetPath}${url.search}`;
     
-    // Copy request headers
+    // Copiar os cabeçalhos da solicitação original
     const headers = new Headers();
-    req.headers.forEach((value, key) => {
-      // Don't copy host-related headers
+    for (const [key, value] of req.headers.entries()) {
+      // Não copiar cabeçalhos relacionados a host e origem
       if (!['host', 'origin', 'referer'].includes(key.toLowerCase())) {
         headers.append(key, value);
       }
-    });
+    }
     
     // Add Supabase API key if not present
     if (!headers.has('apikey')) {
@@ -42,29 +52,33 @@ Deno.serve(async (req) => {
       headers: headers,
     };
     
-    // Add request body for non-GET methods
+    // Adicionar corpo da solicitação para métodos não-GET
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       const contentType = req.headers.get('content-type');
-      if (contentType?.includes('application/json')) {
-        options.body = JSON.stringify(await req.json());
-      } else if (contentType?.includes('multipart/form-data')) {
-        options.body = await req.formData();
+      if (contentType && contentType.includes('application/json')) {
+        options.body = JSON.stringify(await req.json().catch(() => ({})));
+      } else if (contentType && contentType.includes('multipart/form-data')) {
+        options.body = await req.formData().catch(() => new FormData());
       } else {
-        options.body = await req.text();
+        options.body = await req.text().catch(() => '');
       }
     }
+    
+    console.log(`Proxying request to: ${targetUrl}`);
     
     // Make request to Supabase
     const response = await fetch(targetUrl, options);
     
-    // Create response with CORS headers
+    // Criar resposta com cabeçalhos CORS
     const responseHeaders = new Headers();
-    response.headers.forEach((value, key) => {
+    for (const [key, value] of response.headers.entries()) {
       responseHeaders.append(key, value);
-    });
-    Object.entries(corsHeaders).forEach(([key, value]) => {
+    }
+    
+    // Adicionar cabeçalhos CORS à resposta
+    for (const [key, value] of Object.entries(corsHeaders)) {
       responseHeaders.set(key, value);
-    });
+    }
     
     // Get response body
     const responseBody = await response.text();
@@ -74,7 +88,7 @@ Deno.serve(async (req) => {
       headers: responseHeaders,
     });
   } catch (error: any) {
-    console.error('Proxy error:', error);
+    console.error(`Proxy error: ${error.message}`);
     return new Response(JSON.stringify({
       error: error.message
     }), {

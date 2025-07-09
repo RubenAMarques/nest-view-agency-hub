@@ -153,6 +153,8 @@ export function useXmlImport() {
           throw new Error('Não autenticado');
         }
 
+        console.log('Tentando usar Edge Function para importação...');
+        
         const response = await fetch(
           'https://jpbqehtcthvhhkpbcqxo.functions.supabase.co/xml-import-handler',
           {
@@ -160,7 +162,9 @@ export function useXmlImport() {
             headers: {
               'Authorization': `Bearer ${session.session.access_token}`,
               'Content-Type': 'application/json',
+              'x-supabase-auth': `Bearer ${session.session.access_token}`,
             },
+            credentials: 'include',
             body: JSON.stringify({
               xmlContent: fileText,
               fileName: selectedFile.name,
@@ -191,8 +195,15 @@ export function useXmlImport() {
         await fetchImports();
         return true;
 
-      } catch (edgeFunctionError) {
+      } catch (edgeFunctionError: any) {
         console.warn('Edge Function failed, falling back to direct method:', edgeFunctionError);
+        
+        // Check if it's a CORS error specifically
+        if (edgeFunctionError.message?.includes('CORS') || 
+            edgeFunctionError.message?.includes('fetch') ||
+            edgeFunctionError.message?.includes('Failed to fetch')) {
+          console.log('Detectado erro CORS, tentando método direto...');
+        }
         
         // Fallback to direct method
         let importRecord: any = null;
