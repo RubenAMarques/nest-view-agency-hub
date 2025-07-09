@@ -3,15 +3,33 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
 import XmlImport from '@/components/XmlImport';
 
 export default function AgencyDashboard() {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/auth', { replace: true });
+    try {
+      const { error } = await signOut();
+      if (error) {
+        toast({
+          title: "Erro ao sair",
+          description: `Falha no logout: ${error.message}`,
+          variant: "destructive",
+        });
+        return;
+      }
+      navigate('/auth', { replace: true });
+    } catch (error) {
+      toast({
+        title: "Erro ao sair",
+        description: "Ocorreu um erro inesperado ao fazer logout",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

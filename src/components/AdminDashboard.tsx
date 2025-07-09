@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +16,7 @@ interface Agency {
 
 export default function AdminDashboard() {
   const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
   const [agencyName, setAgencyName] = useState('');
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -82,6 +84,27 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      const { error } = await signOut();
+      if (error) {
+        toast({
+          title: "Erro ao sair",
+          description: `Falha no logout: ${error.message}`,
+          variant: "destructive",
+        });
+        return;
+      }
+      navigate('/auth', { replace: true });
+    } catch (error) {
+      toast({
+        title: "Erro ao sair",
+        description: "Ocorreu um erro inesperado ao fazer logout",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm">
@@ -98,7 +121,7 @@ export default function AdminDashboard() {
             <span className="text-sm text-muted-foreground">
               {user?.email} • {profile?.agency?.name}
             </span>
-            <Button onClick={signOut} variant="outline" size="sm">
+            <Button onClick={handleSignOut} variant="outline" size="sm">
               Sair
             </Button>
           </div>

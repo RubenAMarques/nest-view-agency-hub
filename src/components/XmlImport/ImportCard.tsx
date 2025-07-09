@@ -111,7 +111,7 @@ export function ImportCard({ importRecord, onImportDeleted }: ImportCardProps) {
       <div className="flex items-center gap-3">
         <div className="text-right">
           <div className="text-sm font-semibold text-foreground">
-            {importRecord.num_listings} anúncio{importRecord.num_listings !== 1 ? 's' : ''}
+            {importRecord.num_listings ?? 0} anúncio{(importRecord.num_listings ?? 0) !== 1 ? 's' : ''}
           </div>
         </div>
         
