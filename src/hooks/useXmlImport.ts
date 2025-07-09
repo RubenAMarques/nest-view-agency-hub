@@ -124,17 +124,6 @@ export function useXmlImport() {
       return false;
     }
 
-    // Check connection before starting
-    const isConnected = await checkConnection();
-    if (!isConnected) {
-      toast({
-        title: "Erro de Conexão",
-        description: "Não foi possível conectar ao servidor. Verifique a sua conexão à internet e tente novamente.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
     // Validate XML file before processing
     const isValid = await validateXmlFile(selectedFile);
     if (!isValid) {
@@ -143,7 +132,6 @@ export function useXmlImport() {
 
     setIsUploading(true);
     setUploadProgress(10);
-    let importRecord: any = null;
     
     try {
       const fileText = await selectedFile.text();
@@ -156,75 +144,133 @@ export function useXmlImport() {
         throw new Error('Nenhum anúncio encontrado no ficheiro XML');
       }
 
-      // Create import record with retry
-      const { data: importData, error: importError } = await retryWithDelay(async () => {
-        return await supabase
-          .from('imports')
-          .insert({
-            agency_id: profile.agency_id,
-            file_name: selectedFile.name,
-            num_listings: listings.length,
-            status: 'processing'
-          })
-          .select()
-          .single();
-      });
-
-      if (importError) throw importError;
-      importRecord = importData;
       setUploadProgress(60);
 
-      // Insert listings with import_id and retry
-      const listingsWithAgency = listings.map(listing => ({
-        ...listing,
-        agency_id: profile.agency_id,
-        import_id: importRecord.id
-      }));
+      // Try using Edge Function first
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        if (!session?.session?.access_token) {
+          throw new Error('Não autenticado');
+        }
 
-      const { error: listingsError } = await retryWithDelay(async () => {
-        return await supabase
-          .from('listings')
-          .insert(listingsWithAgency);
-      });
+        const response = await fetch(
+          'https://jpbqehtcthvhhkpbcqxo.functions.supabase.co/xml-import-handler',
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${session.session.access_token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              xmlContent: fileText,
+              fileName: selectedFile.name,
+              listings: listings
+            })
+          }
+        );
 
-      if (listingsError) {
-        await cleanupFailedImport(importRecord.id);
-        throw listingsError;
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Erro na Edge Function');
+        }
+
+        const result = await response.json();
+        
+        if (!result.success) {
+          throw new Error(result.error || 'Erro desconhecido');
+        }
+
+        setUploadProgress(100);
+
+        toast({
+          title: "Sucesso",
+          description: `Importação concluída com sucesso! ${listings.length} anúncios importados.`,
+        });
+
+        setSelectedFile(null);
+        await fetchImports();
+        return true;
+
+      } catch (edgeFunctionError) {
+        console.warn('Edge Function failed, falling back to direct method:', edgeFunctionError);
+        
+        // Fallback to direct method
+        let importRecord: any = null;
+        
+        try {
+          // Create import record with retry
+          const { data: importData, error: importError } = await retryWithDelay(async () => {
+            return await supabase
+              .from('imports')
+              .insert({
+                agency_id: profile.agency_id,
+                file_name: selectedFile.name,
+                num_listings: listings.length,
+                status: 'processing'
+              })
+              .select()
+              .single();
+          });
+
+          if (importError) throw importError;
+          importRecord = importData;
+          setUploadProgress(70);
+
+          // Insert listings with import_id and retry
+          const listingsWithAgency = listings.map(listing => ({
+            ...listing,
+            agency_id: profile.agency_id,
+            import_id: importRecord.id
+          }));
+
+          const { error: listingsError } = await retryWithDelay(async () => {
+            return await supabase
+              .from('listings')
+              .insert(listingsWithAgency);
+          });
+
+          if (listingsError) {
+            await cleanupFailedImport(importRecord.id);
+            throw listingsError;
+          }
+
+          setUploadProgress(90);
+
+          // Update import status to completed with retry
+          const { error: updateError } = await retryWithDelay(async () => {
+            return await supabase
+              .from('imports')
+              .update({ status: 'completed' })
+              .eq('id', importRecord.id);
+          });
+
+          if (updateError) {
+            console.error('Failed to update import status:', updateError);
+            // Don't throw here as the listings were successfully inserted
+          }
+
+          setUploadProgress(100);
+
+          toast({
+            title: "Sucesso",
+            description: `Importação concluída com sucesso! ${listings.length} anúncios importados.`,
+          });
+
+          setSelectedFile(null);
+          await fetchImports();
+          return true;
+
+        } catch (directError) {
+          // Cleanup failed import if we have an import record
+          if (importRecord?.id) {
+            await cleanupFailedImport(importRecord.id);
+          }
+          throw directError;
+        }
       }
-
-      setUploadProgress(80);
-
-      // Update import status to completed with retry
-      const { error: updateError } = await retryWithDelay(async () => {
-        return await supabase
-          .from('imports')
-          .update({ status: 'completed' })
-          .eq('id', importRecord.id);
-      });
-
-      if (updateError) {
-        console.error('Failed to update import status:', updateError);
-        // Don't throw here as the listings were successfully inserted
-      }
-
-      setUploadProgress(100);
-
-      toast({
-        title: "Sucesso",
-        description: `Importação concluída com sucesso! ${listings.length} anúncios importados.`,
-      });
-
-      setSelectedFile(null);
-      await fetchImports(); // Refresh the imports list
-      return true;
 
     } catch (error: any) {
       console.error('Import error:', error);
-      
-      // Cleanup failed import if we have an import record
-      if (importRecord?.id) {
-        await cleanupFailedImport(importRecord.id);
-      }
       
       const errorMessage = error.message?.includes('fetch') || error.message?.includes('Failed to fetch')
         ? 'Erro de conectividade. Verifique a configuração CORS no Supabase e tente novamente.'
