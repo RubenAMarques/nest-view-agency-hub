@@ -43,6 +43,7 @@ export type Database = {
           file_name: string | null
           id: string
           import_date: string
+          listings_inserted: number | null
           num_listings: number
           status: string
           updated_at: string
@@ -54,6 +55,7 @@ export type Database = {
           file_name?: string | null
           id?: string
           import_date?: string
+          listings_inserted?: number | null
           num_listings?: number
           status?: string
           updated_at?: string
@@ -65,6 +67,7 @@ export type Database = {
           file_name?: string | null
           id?: string
           import_date?: string
+          listings_inserted?: number | null
           num_listings?: number
           status?: string
           updated_at?: string

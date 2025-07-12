@@ -3,6 +3,7 @@ export interface ImportRecord {
   import_date: string;
   file_name: string;
   num_listings: number;
+  listings_inserted?: number;
   status: string;
 }
 

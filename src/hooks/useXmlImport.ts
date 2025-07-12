@@ -5,6 +5,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { parseOpenImmoXml } from '@/utils/xmlParser';
 import { ImportRecord } from '@/types/import';
 
+// Utility function to chunk arrays
+function chunk<T>(array: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
+  }
+  return chunks;
+}
+
 export function useXmlImport() {
   const { profile } = useAuth();
   const { toast } = useToast();
@@ -205,7 +214,7 @@ export function useXmlImport() {
           console.log('Detectado erro CORS, tentando método direto...');
         }
         
-        // Fallback to direct method
+        // Fallback to direct method with batch processing
         let importRecord: any = null;
         
         try {
@@ -217,6 +226,7 @@ export function useXmlImport() {
                 agency_id: profile.agency_id,
                 file_name: selectedFile.name,
                 num_listings: listings.length,
+                listings_inserted: 0,
                 status: 'processing'
               })
               .select()
@@ -227,31 +237,68 @@ export function useXmlImport() {
           importRecord = importData;
           setUploadProgress(70);
 
-          // Insert listings with import_id and retry
+          // Prepare listings with agency_id and import_id
           const listingsWithAgency = listings.map(listing => ({
             ...listing,
             agency_id: profile.agency_id,
             import_id: importRecord.id
           }));
 
-          const { error: listingsError } = await retryWithDelay(async () => {
-            return await supabase
-              .from('listings')
-              .insert(listingsWithAgency);
-          });
+          // Process in batches of 5 listings
+          const chunks = chunk(listingsWithAgency, 5);
+          let totalInserted = 0;
 
-          if (listingsError) {
-            await cleanupFailedImport(importRecord.id);
-            throw listingsError;
+          for (const [index, chunk] of chunks.entries()) {
+            try {
+              const { error: chunkError } = await retryWithDelay(async () => {
+                return await supabase.from('listings').insert(chunk);
+              });
+
+              if (chunkError) {
+                // Mark import as failed and cleanup
+                await supabase
+                  .from('imports')
+                  .update({ 
+                    status: 'failed',
+                    error_message: `Falha no lote ${index + 1}: ${chunkError.message}`,
+                    listings_inserted: totalInserted
+                  })
+                  .eq('id', importRecord.id);
+                
+                throw new Error(`Falha no lote ${index + 1}: ${chunkError.message}`);
+              }
+
+              totalInserted += chunk.length;
+              
+              // Update progress in database
+              await supabase
+                .from('imports')
+                .update({ listings_inserted: totalInserted })
+                .eq('id', importRecord.id);
+
+              // Update UI progress
+              const progressPercent = 70 + (index + 1) / chunks.length * 20;
+              setUploadProgress(progressPercent);
+
+            } catch (batchError) {
+              // Cleanup any partially inserted listings
+              await supabase
+                .from('listings')
+                .delete()
+                .eq('import_id', importRecord.id);
+              
+              throw batchError;
+            }
           }
 
-          setUploadProgress(90);
-
-          // Update import status to completed with retry
+          // Update import status to completed
           const { error: updateError } = await retryWithDelay(async () => {
             return await supabase
               .from('imports')
-              .update({ status: 'completed' })
+              .update({ 
+                status: 'completed',
+                listings_inserted: totalInserted
+              })
               .eq('id', importRecord.id);
           });
 
@@ -264,7 +311,7 @@ export function useXmlImport() {
 
           toast({
             title: "Sucesso",
-            description: `Importação concluída com sucesso! ${listings.length} anúncios importados.`,
+            description: `Importação concluída com sucesso! ${totalInserted} anúncios importados.`,
           });
 
           setSelectedFile(null);
@@ -283,9 +330,7 @@ export function useXmlImport() {
     } catch (error: any) {
       console.error('Import error:', error);
       
-      const errorMessage = error.message?.includes('fetch') || error.message?.includes('Failed to fetch')
-        ? 'Erro de conectividade. Verifique a configuração CORS no Supabase e tente novamente.'
-        : error.message || 'Erro ao processar o ficheiro XML.';
+      const errorMessage = error.message || 'Erro ao processar o ficheiro XML.';
       
       toast({
         title: "Erro na importação",
