@@ -125,6 +125,33 @@ export const parseOpenImmoXml = (xmlText: string): ParsedListing[] => {
       }
     }
 
+    // Extract images from anhang elements
+    const images: string[] = [];
+    const anhaengeElements = immobilie.getElementsByTagName('anhang');
+    
+    Array.from(anhaengeElements).forEach((anhang) => {
+      const gruppe = anhang.getAttribute('gruppe');
+      if (gruppe === 'BILDER') {
+        const datenElements = anhang.getElementsByTagName('daten');
+        Array.from(datenElements).forEach((daten) => {
+          const formatElement = getElementByTagName(daten, 'format');
+          const pfadElement = getElementByTagName(daten, 'pfad');
+          
+          if (formatElement && pfadElement) {
+            const format = getElementTextContent(formatElement);
+            const pfad = getElementTextContent(pfadElement);
+            
+            // Check if it's an image format and has a path
+            if (format && pfad && format.toLowerCase().startsWith('image/')) {
+              images.push(pfad);
+            }
+          }
+        });
+      }
+    });
+    
+    listing.images = images;
+
     // Store original XML data for unmapped fields
     listing.xml_data = {
       original_id: immobilie.getAttribute('id') || undefined,

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { ArrowLeft, Search, Filter, X } from 'lucide-react';
+import { ArrowLeft, Search, Filter, X, Bot } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ImportRecord {
   id: string;
@@ -45,6 +46,7 @@ export default function ImportDetails() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
+  const [openAiApiKey, setOpenAiApiKey] = useState('');
 
   useEffect(() => {
     if (!importId || !profile?.agency_id) return;
@@ -334,15 +336,62 @@ export default function ImportDetails() {
           </CardContent>
         </Card>
 
+        {/* AI Validation Section */}
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-elegant">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bot className="h-5 w-5" />
+              Validação com IA
+            </CardTitle>
+            <CardDescription>
+              Use OpenAI para validar automaticamente a qualidade dos anúncios
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="openai-key" className="text-sm font-medium">
+                OpenAI API Key
+              </label>
+              <Input
+                id="openai-key"
+                type="password"
+                placeholder="Introduza a sua chave API do OpenAI..."
+                value={openAiApiKey}
+                onChange={(e) => setOpenAiApiKey(e.target.value)}
+                className="font-mono text-sm"
+              />
+              <p className="text-xs text-muted-foreground">
+                A chave API não será guardada permanentemente
+              </p>
+            </div>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="w-full">
+                    <Button 
+                      disabled 
+                      className="w-full" 
+                      variant="outline"
+                    >
+                      Executar Validação (em breve)
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Funcionalidade em desenvolvimento</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </CardContent>
+        </Card>
+
         {/* Analytics Section */}
         <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-elegant">
           <CardHeader>
             <CardTitle>Análise de Dados</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <Button disabled className="w-full" title="Em breve">
-              Correr Análise
-            </Button>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Bad Photos Card */}

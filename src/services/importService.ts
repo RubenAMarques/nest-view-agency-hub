@@ -148,38 +148,3 @@ export const processBatchImport = async (
     };
   }
 };
-
-export const tryEdgeFunctionImport = async (
-  fileText: string,
-  fileName: string,
-  listings: ParsedListing[]
-): Promise<{ success: boolean; error?: string }> => {
-  try {
-    console.log('Tentando usar Edge Function para importação...');
-    
-    const { data, error } = await supabase.functions.invoke('xml-import-handler', {
-      body: {
-        xmlContent: fileText,
-        fileName: fileName,
-        listings: listings
-      }
-    });
-
-    if (error) {
-      throw new Error(error.message || 'Erro na Edge Function');
-    }
-
-    if (!data?.success) {
-      throw new Error(data?.error || 'Falha na importação');
-    }
-
-    console.log('Edge Function import successful:', data);
-    return { success: true };
-  } catch (error: any) {
-    console.error('Edge Function import failed:', error);
-    return { 
-      success: false, 
-      error: error.message || 'Erro na Edge Function' 
-    };
-  }
-};

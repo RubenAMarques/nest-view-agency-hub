@@ -7,8 +7,7 @@ import { validateXmlFile } from '@/utils/xmlValidation';
 import { 
   createImportRecord, 
   processBatchImport, 
-  cleanupFailedImport,
-  tryEdgeFunctionImport 
+  cleanupFailedImport
 } from '@/services/importService';
 import { ImportRecord } from '@/types/import';
 
@@ -99,23 +98,7 @@ export function useXmlImport() {
 
       setUploadProgress(60);
 
-      // Try using Edge Function first
-      const edgeFunctionResult = await tryEdgeFunctionImport(fileText, selectedFile.name, listings);
-      
-      if (edgeFunctionResult.success) {
-        setUploadProgress(100);
-        toast({
-          title: "Sucesso",
-          description: `Importação concluída com sucesso! ${listings.length} anúncios importados.`,
-        });
-        setSelectedFile(null);
-        await fetchImports();
-        return true;
-      }
-
-      // Fallback to direct method with batch processing
-      console.warn('Edge Function failed, falling back to direct method:', edgeFunctionResult.error);
-      
+      // Create import record using direct method (no more Edge Functions)
       let importRecord: any = null;
       
       try {

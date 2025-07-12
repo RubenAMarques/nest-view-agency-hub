@@ -21,6 +21,7 @@ export interface ParsedListing {
   living_area?: number;
   rooms?: number;
   property_type?: string;
+  images?: string[];
   xml_data: {
     original_id?: string;
     raw_xml: string;
