@@ -5,11 +5,6 @@ import { supabase } from '@/integrations/supabase/client';
 interface Profile {
   id: string;
   user_id: string;
-  agency_id: string;
-  agency?: {
-    id: string;
-    name: string;
-  };
 }
 
 interface AuthContextType {
@@ -17,8 +12,7 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   isLoading: boolean;
-  isAdmin: boolean;
-  signUp: (email: string, password: string, agencyName: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
 }
@@ -31,31 +25,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const isAdmin = profile?.agency?.name === 'Administrador';
-
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select(`
-          *,
-          agency:agencies (
-            id,
-            name
-          )
-        `)
-        .eq('user_id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching profile:', error);
-        // Don't show toast here as it might be called during initialization
-        return;
-      }
-
-      setProfile(data);
+      // Criar perfil simples sem agência
+      setProfile({
+        id: userId,
+        user_id: userId
+      });
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Error setting profile:', error);
     }
   };
 
@@ -116,17 +94,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, agencyName: string) => {
+  const signUp = async (email: string, password: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          agency_name: agencyName
-        }
+        emailRedirectTo: redirectUrl
       }
     });
     
@@ -155,7 +130,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     session,
     profile,
     isLoading,
-    isAdmin,
     signUp,
     signIn,
     signOut

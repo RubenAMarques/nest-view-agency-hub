@@ -7,8 +7,9 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import ImportDetails from "./pages/ImportDetails";
+import PropertiesList from "./pages/PropertiesList";
+import PropertyDetail from "./pages/PropertyDetail";
+import QualityDashboard from "./pages/QualityDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,22 +25,29 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route 
-              path="/dashboard" 
+              path="/properties" 
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <PropertiesList />
                 </ProtectedRoute>
               } 
             />
             <Route 
-              path="/importacoes/:importId" 
+              path="/properties/:id" 
               element={
                 <ProtectedRoute>
-                  <ImportDetails />
+                  <PropertyDetail />
                 </ProtectedRoute>
               } 
             />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <QualityDashboard />
+                </ProtectedRoute>
+              } 
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

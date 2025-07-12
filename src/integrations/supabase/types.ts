@@ -14,198 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
-      agencies: {
+      properties: {
         Row: {
-          created_at: string
-          id: string
-          name: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          name: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          name?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      imports: {
-        Row: {
-          agency_id: string
-          created_at: string
-          error_message: string | null
-          file_name: string | null
-          id: string
-          import_date: string
-          listings_inserted: number | null
-          num_listings: number
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          agency_id: string
-          created_at?: string
-          error_message?: string | null
-          file_name?: string | null
-          id?: string
-          import_date?: string
-          listings_inserted?: number | null
-          num_listings?: number
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          agency_id?: string
-          created_at?: string
-          error_message?: string | null
-          file_name?: string | null
-          id?: string
-          import_date?: string
-          listings_inserted?: number | null
-          num_listings?: number
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "imports_agency_id_fkey"
-            columns: ["agency_id"]
-            isOneToOne: false
-            referencedRelation: "agencies"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      listings: {
-        Row: {
-          agency_id: string
+          area_util: number | null
           city: string | null
           country: string | null
           created_at: string
           description: string | null
           has_bad_description: boolean | null
           has_bad_photos: boolean | null
+          has_insufficient_location: boolean | null
+          has_missing_data: boolean | null
           id: string
-          images: string[] | null
-          import_id: string | null
+          img_urls: string[] | null
           is_duplicate: boolean | null
+          last_analyzed_at: string | null
           latitude: number | null
-          living_area: number | null
           longitude: number | null
-          offer_type: string | null
+          offer_type: string
           price: number | null
-          property_type: string | null
+          property_type: string
           rooms: number | null
+          score: number | null
           street: string | null
-          title: string | null
+          title: string
           updated_at: string
-          xml_data: Json | null
+          user_id: string
+          year_built: number | null
           zipcode: string | null
         }
         Insert: {
-          agency_id: string
+          area_util?: number | null
           city?: string | null
           country?: string | null
           created_at?: string
           description?: string | null
           has_bad_description?: boolean | null
           has_bad_photos?: boolean | null
+          has_insufficient_location?: boolean | null
+          has_missing_data?: boolean | null
           id?: string
-          images?: string[] | null
-          import_id?: string | null
+          img_urls?: string[] | null
           is_duplicate?: boolean | null
+          last_analyzed_at?: string | null
           latitude?: number | null
-          living_area?: number | null
           longitude?: number | null
-          offer_type?: string | null
+          offer_type?: string
           price?: number | null
-          property_type?: string | null
+          property_type: string
           rooms?: number | null
+          score?: number | null
           street?: string | null
-          title?: string | null
+          title: string
           updated_at?: string
-          xml_data?: Json | null
+          user_id: string
+          year_built?: number | null
           zipcode?: string | null
         }
         Update: {
-          agency_id?: string
+          area_util?: number | null
           city?: string | null
           country?: string | null
           created_at?: string
           description?: string | null
           has_bad_description?: boolean | null
           has_bad_photos?: boolean | null
+          has_insufficient_location?: boolean | null
+          has_missing_data?: boolean | null
           id?: string
-          images?: string[] | null
-          import_id?: string | null
+          img_urls?: string[] | null
           is_duplicate?: boolean | null
+          last_analyzed_at?: string | null
           latitude?: number | null
-          living_area?: number | null
           longitude?: number | null
-          offer_type?: string | null
+          offer_type?: string
           price?: number | null
-          property_type?: string | null
+          property_type?: string
           rooms?: number | null
+          score?: number | null
           street?: string | null
-          title?: string | null
-          updated_at?: string
-          xml_data?: Json | null
-          zipcode?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "listings_agency_id_fkey"
-            columns: ["agency_id"]
-            isOneToOne: false
-            referencedRelation: "agencies"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listings_import_id_fkey"
-            columns: ["import_id"]
-            isOneToOne: false
-            referencedRelation: "imports"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      profiles: {
-        Row: {
-          agency_id: string
-          created_at: string
-          id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          agency_id: string
-          created_at?: string
-          id?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          agency_id?: string
-          created_at?: string
-          id?: string
+          title?: string
           updated_at?: string
           user_id?: string
+          year_built?: number | null
+          zipcode?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_agency_id_fkey"
-            columns: ["agency_id"]
-            isOneToOne: false
-            referencedRelation: "agencies"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {

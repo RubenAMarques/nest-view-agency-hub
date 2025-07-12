@@ -1,74 +1,118 @@
-import React, { useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
+import { Building2, BarChart3, Search, TrendingUp } from "lucide-react";
 
-const Index = () => {
-  const { user, isLoading } = useAuth();
+export default function Index() {
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
-    }
-  }, [user, navigate]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-subtle">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl">
-        <div className="text-center mb-12">
-          <h1 className="text-6xl font-bold tracking-tight bg-gradient-primary bg-clip-text text-transparent mb-4">
-            Nest View
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-16">
+        <div className="text-center mb-16">
+          <h1 className="text-5xl font-bold text-foreground mb-6">
+            PropertyQuality
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Plataforma de gestão imobiliária para agências modernas
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Plataforma de análise de qualidade de imóveis com inteligência artificial
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 mb-12">
-          <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-elegant">
-            <CardHeader>
-              <CardTitle>Para Agências</CardTitle>
-              <CardDescription>
-                Gerir propriedades, clientes e vendas numa plataforma integrada
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Gestão de propriedades</li>
-                <li>• Base de dados de clientes</li>
-                <li>• Relatórios de vendas</li>
-                <li>• Dashboard analítico</li>
-              </ul>
-            </CardContent>
-          </Card>
+        {user ? (
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-foreground mb-4">
+                Bem-vindo de volta!
+              </h2>
+              <p className="text-muted-foreground">
+                Escolha uma das opções abaixo para continuar
+              </p>
+            </div>
 
-        </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <Card className="hover:shadow-elegant transition-shadow cursor-pointer border-border" onClick={() => navigate('/properties')}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Building2 className="h-5 w-5" />
+                    Lista de Imóveis
+                  </CardTitle>
+                  <CardDescription>
+                    Veja e analise todos os seus imóveis
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Acesse a lista completa com filtros e análise de qualidade
+                  </p>
+                </CardContent>
+              </Card>
 
-        <div className="text-center space-x-4">
-          <Button 
-            onClick={() => navigate('/auth')}
-            variant="elegant"
-            size="lg"
-          >
-            Entrar na Plataforma
-          </Button>
-        </div>
+              <Card className="hover:shadow-elegant transition-shadow cursor-pointer border-border" onClick={() => navigate('/dashboard')}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    Dashboard
+                  </CardTitle>
+                  <CardDescription>
+                    Métricas e estatísticas de qualidade
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Visão geral da qualidade dos imóveis e áreas a melhorar
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-elegant transition-shadow border-border">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Search className="h-5 w-5" />
+                    Análise Inteligente
+                  </CardTitle>
+                  <CardDescription>
+                    IA para avaliação de qualidade
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Análise automática de fotos, descrições e dados
+                  </p>
+                  <Button className="w-full" onClick={() => navigate('/properties')}>
+                    Começar Análise
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        ) : (
+          <div className="max-w-md mx-auto">
+            <Card className="shadow-elegant border-border">
+              <CardHeader className="text-center">
+                <CardTitle className="text-2xl">Bem-vindo ao PropertyQuality</CardTitle>
+                <CardDescription>
+                  Entre na sua conta para começar a analisar os seus imóveis
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  className="w-full mb-4" 
+                  onClick={() => navigate('/auth')}
+                >
+                  Entrar
+                </Button>
+                <p className="text-center text-sm text-muted-foreground">
+                  Ainda não tem conta? Registe-se na página de autenticação
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );
-};
+}
 
-export default Index;
+
