@@ -1,24 +1,17 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 Deno.serve(async (req) => {
-  // Configurar cabeçalhos CORS para permitir solicitações de domínios específicos
-  const allowedOrigins = [
-    'https://fae488a3-d626-4849-b66c-d31dda8be445.lovableproject.com',
-    'https://id-preview--fae488a3-d626-4849-b66c-d31dda8be445.lovable.app',
-    'https://lovable.dev',
-    'http://localhost:3000',
-    'http://localhost:5173'
-  ];
-  
+  // Configurar cabeçalhos CORS
   const origin = req.headers.get('Origin') || '';
-  const isAllowedOrigin = allowedOrigins.includes(origin);
+  const isDevelopment = origin.includes('localhost') || origin.includes('lovable');
   
   const corsHeaders = {
-    'Access-Control-Allow-Origin': isAllowedOrigin ? origin : '*',
+    'Access-Control-Allow-Origin': isDevelopment ? '*' : origin,
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-auth',
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Max-Age': '86400',
+    'Vary': 'Origin',
   };
 
   // Lidar com solicitações OPTIONS (preflight)
@@ -136,9 +129,8 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({
         status: 'online',
         message: 'A função XML Import Handler está funcionando corretamente',
-        allowedOrigins,
         origin: origin,
-        isAllowedOrigin
+        isDevelopment
       }), {
         status: 200,
         headers: {

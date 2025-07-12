@@ -155,44 +155,28 @@ export const tryEdgeFunctionImport = async (
   listings: ParsedListing[]
 ): Promise<{ success: boolean; error?: string }> => {
   try {
-    const { data: session } = await supabase.auth.getSession();
-    if (!session?.session?.access_token) {
-      throw new Error('Não autenticado');
-    }
-
     console.log('Tentando usar Edge Function para importação...');
     
-    const response = await fetch(
-      'https://eytqmdssekkdlnoqzrzb.functions.supabase.co/xml-import-handler',
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.session.access_token}`,
-          'Content-Type': 'application/json',
-          'x-supabase-auth': `Bearer ${session.session.access_token}`,
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          xmlContent: fileText,
-          fileName: fileName,
-          listings: listings
-        })
+    const { data, error } = await supabase.functions.invoke('xml-import-handler', {
+      body: {
+        xmlContent: fileText,
+        fileName: fileName,
+        listings: listings
       }
-    );
+    });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Erro na Edge Function');
+    if (error) {
+      throw new Error(error.message || 'Erro na Edge Function');
     }
 
-    const result = await response.json();
-    
-    if (!result.success) {
-      throw new Error(result.error || 'Erro desconhecido');
+    if (!data?.success) {
+      throw new Error(data?.error || 'Falha na importação');
     }
 
+    console.log('Edge Function import successful:', data);
     return { success: true };
   } catch (error: any) {
+    console.error('Edge Function import failed:', error);
     return { 
       success: false, 
       error: error.message || 'Erro na Edge Function' 
